@@ -2,13 +2,27 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
-        // Use memory storage for MongoDB to avoid connection issues
-        const mongoURI = 'mongodb://127.0.0.1:27017/edutrack_school';
-        console.log('MongoDB URI: Using local MongoDB connection');
+        // 1. Check for the MONGODB_URI environment variable (set on Render)
+        const externalURI = process.env.MONGODB_URI;
         
+        // 2. Determine the URI to use: External URI first, then local fallback
+        const mongoURI = externalURI || 'mongodb://127.0.0.1:27017/edutrack_school';
+        
+        // 3. Log which URI is being used (helpful for debugging)
+        if (externalURI) {
+            // This is the message you should see in Render logs now:
+            console.log('MongoDB URI: Using EXTERNAL Atlas connection.'); 
+        } else {
+            // This is the message if the environment variable is missing:
+            console.log('MongoDB URI: Using local fallback connection.');
+        }
+        
+        // Note: useNewUrlParser and useUnifiedTopology are typically unnecessary 
+        // in modern Mongoose versions (v6+), but we will keep them commented out 
+        // as a reminder.
         const conn = await mongoose.connect(mongoURI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+            // useNewUrlParser: true, 
+            // useUnifiedTopology: true,
         });
         
         console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -31,8 +45,9 @@ const connectDB = async () => {
         
         return conn;
     } catch (error) {
-        console.error('Error connecting to MongoDB:', error.message);
-        // Don't exit process on connection failure to allow app to run
+        // This log will only show up if the connection attempt fails (e.g., cluster is paused)
+        console.error('Error connecting to MongoDB:', error.message); 
+        // Allow app to run in "demo mode" if connection fails
         console.log('Continuing without database connection...');
         return null;
     }
