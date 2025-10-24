@@ -13,9 +13,15 @@ import {
     getError,
 } from './userSlice';
 
+// --- CRITICAL FIX START ---
+// We use REACT_APP_BACKEND_URL to match the variable name set on Render.
+// If it's not set (e.g., local dev), it falls back to the local address.
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
+// We no longer append "/api" here, as we will append it in the axios calls below.
+// --- CRITICAL FIX END ---
+
 // Enable mock mode to bypass backend connection issues
 const MOCK_MODE = false; // Set to true to use mock data instead of real API
-const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5001/api";
 
 export const loginUser = (fields, role) => async (dispatch) => {
     dispatch(authRequest());
@@ -61,12 +67,16 @@ export const loginUser = (fields, role) => async (dispatch) => {
     }
     
     try {
-        console.log(`Attempting to login with role: ${role} to ${BASE_URL}/${role}Login`);
-        const result = await axios.post(`${BASE_URL}/${role}Login`, fields, {
+        console.log(`Attempting to login with role: ${role} to ${BASE_URL}/api/${role}Login`);
+        // --- AXIOS URL ADJUSTMENT ---
+        // We now append the /api/${role}Login to the BASE_URL
+        const result = await axios.post(`${BASE_URL}/api/${role}Login`, fields, {
             headers: { 'Content-Type': 'application/json' },
             withCredentials: true,
             timeout: 10000
         });
+        // --- END AXIOS URL ADJUSTMENT ---
+        
         console.log("Login response:", result.data);
         if (result.data.role) {
             dispatch(authSuccess(result.data));
@@ -120,8 +130,10 @@ export const registerUser = (fields, role) => async (dispatch) => {
     }
     
     try {
-        console.log(`Attempting to register with role: ${role} to ${process.env.REACT_APP_BASE_URL}/${role}Reg`);
-        const result = await axios.post(`${process.env.REACT_APP_BASE_URL}/${role}Reg`, fields, {
+        console.log(`Attempting to register with role: ${role} to ${BASE_URL}/api/${role}Reg`);
+        // --- AXIOS URL ADJUSTMENT ---
+        const result = await axios.post(`${BASE_URL}/api/${role}Reg`, fields, {
+        // --- END AXIOS URL ADJUSTMENT ---
             headers: { 'Content-Type': 'application/json' },
             withCredentials: true,
             timeout: 10000
@@ -163,7 +175,9 @@ export const getUserDetails = (id, address) => async (dispatch) => {
     dispatch(getRequest());
 
     try {
-        const result = await axios.get(`${process.env.REACT_APP_BASE_URL}/${address}/${id}`);
+        // --- AXIOS URL ADJUSTMENT ---
+        const result = await axios.get(`${BASE_URL}/api/${address}/${id}`);
+        // --- END AXIOS URL ADJUSTMENT ---
         if (result.data) {
             dispatch(doneSuccess(result.data));
         }
@@ -173,18 +187,18 @@ export const getUserDetails = (id, address) => async (dispatch) => {
 }
 
 // export const deleteUser = (id, address) => async (dispatch) => {
-//     dispatch(getRequest());
+//     dispatch(getRequest());
 
-//     try {
-//         const result = await axios.delete(`${process.env.REACT_APP_BASE_URL}/${address}/${id}`);
-//         if (result.data.message) {
-//             dispatch(getFailed(result.data.message));
-//         } else {
-//             dispatch(getDeleteSuccess());
-//         }
-//     } catch (error) {
-//         dispatch(getError(error));
-//     }
+//     try {
+//         const result = await axios.delete(`${process.env.REACT_APP_BASE_URL}/${address}/${id}`);
+//         if (result.data.message) {
+//             dispatch(getFailed(result.data.message));
+//         } else {
+//             dispatch(getDeleteSuccess());
+//         }
+//     } catch (error) {
+//         dispatch(getError(error));
+//     }
 // }
 
 
@@ -197,7 +211,9 @@ export const updateUser = (fields, id, address) => async (dispatch) => {
     dispatch(getRequest());
 
     try {
-        const result = await axios.put(`${process.env.REACT_APP_BASE_URL}/${address}/${id}`, fields, {
+        // --- AXIOS URL ADJUSTMENT ---
+        const result = await axios.put(`${BASE_URL}/api/${address}/${id}`, fields, {
+        // --- END AXIOS URL ADJUSTMENT ---
             headers: { 'Content-Type': 'application/json' },
         });
         if (result.data.schoolName) {
@@ -215,7 +231,9 @@ export const addStuff = (fields, address) => async (dispatch) => {
     dispatch(authRequest());
 
     try {
-        const result = await axios.post(`${process.env.REACT_APP_BASE_URL}/${address}Create`, fields, {
+        // --- AXIOS URL ADJUSTMENT ---
+        const result = await axios.post(`${BASE_URL}/api/${address}Create`, fields, {
+        // --- END AXIOS URL ADJUSTMENT ---
             headers: { 'Content-Type': 'application/json' },
         });
 
