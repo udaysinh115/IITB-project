@@ -84,7 +84,7 @@ app.use((req, res, next) => {
 
 // Connect to database
 connectDB().catch(() => {
-    console.log('⚠️  Running in demo mode without database');
+    console.log('⚠️ Running in demo mode without database');
     console.log('💡 To enable full features, install MongoDB or use Docker');
 });
 
@@ -136,13 +136,27 @@ io.on('connection', (socket) => {
 });
 
 // Serve static files in production
-//if (process.env.NODE_ENV === 'production') {
-//    app.use(express.static(path.join(__dirname, '../frontend/build')));
-    
-//    app.get('*', (req, res) => {
-//        res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-//    });
-//}
+// This block is commented out because the frontend is being deployed separately,
+// preventing the ENOENT error when the 'build' folder is missing.
+// if (process.env.NODE_ENV === 'production') {
+//     app.use(express.static(path.join(__dirname, '../frontend/build')));
+//     
+//     app.get('*', (req, res) => {
+//         res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+//     });
+// }
+
+// ***************************************************************
+// ** MODIFICATION: ADDED ROOT ROUTE ('/') FOR API STATUS       **
+// ** This prevents the 'Cannot GET /' error.                   **
+// ***************************************************************
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: "EduTrack API Server is alive and operational. Frontend not hosted here.",
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
 
 // Health check route
 app.get('/api/health', (req, res) => {
